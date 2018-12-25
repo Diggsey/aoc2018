@@ -1,0 +1,54 @@
+TARGET: reg[0]
+CURRENT: reg[5]
+PREV: reg[4]
+
+#ip 1
+0   seti 123 0 5        reg[5] = 123                |
+1   bani 5 456 5        reg[5] &= 456               |
+2   eqri 5 72 5         reg[5] = (reg[5] == 72)     |   NO-OP
+3   addr 5 1 1          jmp 5 if reg[5]             |
+4   seti 0 0 1          jmp 1                        `
+5   seti 0 6 5          reg[5] = 0                  - reg[5] = 0
+6   bori 5 65536 4      reg[4] = reg[5] | 65536     - reg[4] = reg[5] | 65536
+7   seti 13431073 4 5   reg[5] = 13431073           ` reg[5] = 13431073
+8   bani 4 255 3        reg[3] = reg[4] & 255       | reg[5] = (reg[5] + (reg[4] & 255))*65899 & 16777215
+9   addr 5 3 5          reg[5] += reg[3]            |
+10  bani 5 16777215 5   reg[5] &= 16777215          |
+11  muli 5 65899 5      reg[5] *= 65899             |
+12  bani 5 16777215 5   reg[5] &= 16777215           `
+13  gtir 256 4 3        reg[3] = 256 > reg[4]       |
+14  addr 3 1 1          jmp 16 if reg[3]            | jmp 28 if reg[4] < 256
+15  addi 1 1 1          jmp 17                      |
+16  seti 27 9 1         jmp 28                       `
+17  seti 0 1 3          reg[3] = 0                  - reg[3] = 0 
+18  addi 3 1 2          reg[2] = reg[3] + 1         | 
+19  muli 2 256 2        reg[2] *= 256                ` reg[2] = reg[3]*256 + 256
+20  gtrr 2 4 2          reg[2] = reg[2] > reg[4]    |
+21  addr 2 1 1          jmp 23 if reg[2]            |
+22  addi 1 1 1          jmp 24                      | jmp 26 if reg[2] > reg[4]
+23  seti 25 4 1         jmp 26                      |
+24  addi 3 1 3          reg[3] += 1                 - reg[3] += 1
+25  seti 17 8 1         jmp 18
+26  setr 3 4 4          reg[4] = reg[3]            - reg[4] = reg[3]
+27  seti 7 7 1          jmp 8
+28  eqrr 5 0 3          reg[3] = reg[0] == reg[5]   | jmp 6 if TARGET != reg[5]
+29  addr 3 1 1          halt if reg[3]              |
+30  seti 5 9 1          jmp 6                        `
+
+
+CURRENT = 0
+
+repeat
+
+    PREV = CURRENT | 65536
+    CURRENT = 13431073
+
+    do
+        CURRENT = (CURRENT + (PREV & 255))*65899 & 16777215
+
+        if PREV < 256 then break
+
+        PREV /= 256
+    loop
+
+until CURRENT == TARGET

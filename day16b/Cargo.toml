@@ -1,0 +1,9 @@
+[package]
+name = "day16b"
+version = "0.1.0"
+authors = ["Diggory Blake <diggsey@googlemail.com>"]
+edition = "2018"
+
+[dependencies]
+text_io = "0.1.7"
+itertools = "0.8"
